@@ -13,7 +13,7 @@ args = parser.parse_args()
 (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
 if args.train: 
     if args.init_para == 0.0:
-        initializer = tf.keras.initializers.Zeros()
+        initializer = tf.keras.initializers.RandomNormal(stddev=0.01)
     else:
         initializer = tf.keras.initializers.Orthogonal(gain=1.0, seed=None)
 
@@ -33,17 +33,17 @@ if args.train:
     model.summary()
 
     model.compile(optimizer='adam',
-                loss=tf.keras.losses.CategoricalCrossentropy(),
+                loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                 metrics=['accuracy'])
 
     history = model.fit(train_images, train_labels, epochs=10, 
                         validation_data=(test_images, test_labels))
 
-    model_name = 'model_' + str(args.init_para) + '_' + str(args.prune)
-    model.save(model_name)
+    model_path = 'model_' + str(args.init_para) + '_' + str(args.prune)
+    model.save(model, model_path)
 else:
-    model_name = 'model_' + str(args.init_para) + '_' + str(args.prune)
-    model = keras.models.load_model(model_name)
+    model_path = 'model_' + str(args.init_para) + '_' + str(args.prune)
+    model = tf.keras.models.load_model(model_path)
 
 test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
 
